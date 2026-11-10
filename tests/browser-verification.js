@@ -21,14 +21,14 @@ async function runBrowserVerification() {
     try {
       browser = await chromium.launch({
         headless: true,
-        args: ['--allow-file-access-from-files', '--use-gl=angle', '--use-angle=swiftshader']
+        args: ['--use-gl=angle', '--use-angle=swiftshader']
       });
     } catch (err) {
       console.log('Standard chromium launch failed, falling back to msedge channel...');
       browser = await chromium.launch({
         channel: 'msedge',
         headless: true,
-        args: ['--allow-file-access-from-files', '--use-gl=angle', '--use-angle=swiftshader']
+        args: ['--use-gl=angle', '--use-angle=swiftshader']
       });
     }
 

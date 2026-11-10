@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,21 +50,19 @@
     .glass-card {
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(226, 232, 240, 0.8);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.8);
     }
-    @media (prefers-color-scheme: dark) {
-      .glass-card {
-        background: rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(51, 65, 85, 0.8);
-      }
+    .dark .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.8);
     }
     input[type=range] {
       accent-color: #3b82f6;
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden select-none font-sans antialiased w-screen h-screen relative">
+<body class="bg-slate-950 text-slate-100 overflow-hidden select-none font-sans antialiased w-screen h-screen relative">
 
   <!-- 3D WebGL Canvas Container -->
   <div id="canvas-container" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
@@ -72,20 +70,20 @@
   <!-- Top Header Navigation Bar -->
   <header class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
     <!-- Title & Badge -->
-    <div class="pointer-events-auto flex items-center gap-3 glass-card px-4 py-2.5 rounded-2xl shadow-lg border border-white/20">
+    <div class="pointer-events-auto flex items-center gap-3 glass-card px-4 py-2.5 rounded-2xl shadow-lg border border-slate-700/80">
       <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md">
         <i data-lucide="globe" class="w-5 h-5"></i>
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-800 dark:text-white">
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">
             구의 겉넓이(<span class="inline-math">4\pi r^2</span>) 원리 시각화 인터랙티브 Lab
           </h1>
-          <span class="hidden md:inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+          <span class="hidden md:inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-900/60 text-blue-300">
             중1 수학
           </span>
         </div>
-        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+        <p class="text-xs text-slate-300 hidden sm:block">
           입체도형의 겉넓이 | 구의 표면적 = 같은 반지름 원 4개의 넓이 (<span class="inline-math">S = 4\pi r^2</span>)
         </p>
       </div>
@@ -94,13 +92,13 @@
     <!-- Quick Action Buttons -->
     <div class="pointer-events-auto flex items-center gap-2">
       <button id="reset-view-btn" title="카메라 시점 초기화"
-        class="glass-card hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 p-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 text-xs font-medium">
+        class="glass-card hover:bg-slate-800 text-slate-200 hover:text-white p-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 text-xs font-medium">
         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
         <span class="hidden sm:inline">시점 초기화</span>
       </button>
 
       <button id="help-btn" title="조작법 및 개념 안내"
-        class="glass-card hover:bg-blue-50 dark:hover:bg-blue-950/50 text-blue-600 dark:text-blue-400 p-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 text-xs font-medium">
+        class="glass-card hover:bg-blue-950/60 text-blue-400 hover:text-blue-300 p-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 text-xs font-medium">
         <i data-lucide="help-circle" class="w-4 h-4"></i>
         <span class="hidden sm:inline">학습 가이드</span>
       </button>
@@ -109,69 +107,69 @@
 
   <!-- Left Floating Panel: Math Explanations & Realtime Formulas -->
   <aside id="math-panel"
-    class="glass-card absolute top-20 left-4 z-20 w-80 sm:w-96 max-h-[calc(100vh-13rem)] overflow-y-auto rounded-2xl shadow-2xl p-5 border border-slate-200/80 dark:border-slate-700/80 transition-all duration-300">
+    class="glass-card absolute top-20 left-4 z-20 w-80 sm:w-96 max-h-[calc(100vh-13rem)] overflow-y-auto rounded-2xl shadow-2xl p-5 border border-slate-700/80 transition-all duration-300">
     
     <!-- Stage Header & Badge -->
-    <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
       <div class="flex items-center gap-2">
         <span id="stage-badge" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-500 text-white shadow-sm">
           1단계
         </span>
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">
           원리 탐구
         </span>
       </div>
-      <div id="timeline-percent" class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
+      <div id="timeline-percent" class="text-xs font-mono font-bold text-indigo-300 bg-indigo-950/70 px-2 py-0.5 rounded-md">
         진행률 0%
       </div>
     </div>
 
     <!-- Step Explanation Text -->
     <div class="my-3">
-      <h2 id="step-title" class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+      <h2 id="step-title" class="text-sm font-bold text-white flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-blue-500 inline-block animate-pulse"></span>
         온전한 구 상태 관찰
       </h2>
-      <p id="step-text" class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+      <p id="step-text" class="text-xs text-slate-200 mt-1 leading-relaxed">
         반지름이 $r$인 온전한 구의 겉면입니다. 이 겉껍질을 같은 넓이의 4개 조각(오렌지 껍질 형태)으로 분리해 바닥의 원 4개와 비교해 봅시다.
       </p>
     </div>
 
     <!-- Quick Step Buttons -->
     <div class="grid grid-cols-4 gap-1.5 my-3">
-      <button id="step-1-btn" class="step-btn active py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-blue-600 text-white shadow-sm transition hover:bg-blue-700">
+      <button id="step-1-btn" class="step-btn active py-1.5 px-1 rounded-lg text-xs font-bold text-center bg-blue-600 text-white shadow-sm transition hover:bg-blue-700">
         1. 구
       </button>
-      <button id="step-2-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+      <button id="step-2-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white transition">
         2. 분리
       </button>
-      <button id="step-3-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+      <button id="step-3-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white transition">
         3. 비행
       </button>
-      <button id="step-4-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+      <button id="step-4-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white transition">
         4. 채우기
       </button>
     </div>
 
     <!-- Realtime Formula Calculation Box -->
-    <div class="mt-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-2.5">
-      <div class="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+    <div class="mt-4 p-3.5 rounded-xl bg-slate-900/90 border border-slate-700/80 space-y-2.5">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-200">
         <span>📐 실시간 수치 계산기</span>
-        <span class="text-[11px] text-blue-500 font-mono">단위: cm, cm²</span>
+        <span class="text-[11px] text-blue-400 font-mono font-semibold">단위: cm, cm²</span>
       </div>
 
-      <div id="formula-calc" class="text-xs space-y-2 text-slate-800 dark:text-slate-200 leading-normal">
-        <div class="flex items-center justify-between p-1.5 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/50">
-          <span class="text-slate-500 dark:text-slate-400">구의 반지름:</span>
-          <span id="calc-radius" class="font-mono font-bold text-blue-600 dark:text-blue-400">$r = 5.0\text{ cm}$</span>
+      <div id="formula-calc" class="text-xs space-y-2 text-slate-200 leading-normal">
+        <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60">
+          <span class="text-slate-300 font-medium">구의 반지름:</span>
+          <span id="calc-radius" class="font-mono font-bold text-blue-400">$r = 5.0\text{ cm}$</span>
         </div>
-        <div class="flex items-center justify-between p-1.5 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/50">
-          <span class="text-slate-500 dark:text-slate-400">바닥 원 1개 넓이:</span>
-          <span id="calc-circle" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">$\pi r^2 \approx 78.54\text{ cm}^2$</span>
+        <div class="flex items-center justify-between p-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60">
+          <span class="text-slate-300 font-medium">바닥 원 1개 넓이:</span>
+          <span id="calc-circle" class="font-mono font-bold text-emerald-400">$\pi r^2 \approx 78.54\text{ cm}^2$</span>
         </div>
-        <div class="p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-900/60">
-          <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1">구의 겉넓이 공식 유도:</div>
-          <div id="calc-sphere" class="font-mono font-bold text-indigo-700 dark:text-indigo-300 text-center text-sm">
+        <div class="p-2 rounded-lg bg-gradient-to-r from-blue-950/60 to-indigo-950/60 border border-blue-800/70">
+          <div class="text-[11px] font-medium text-slate-300 mb-1">구의 겉넓이 공식 유도:</div>
+          <div id="calc-sphere" class="font-mono font-bold text-indigo-300 text-center text-sm">
             $S = 4 \times (\pi r^2) = 4\pi r^2 \approx 314.16\text{ cm}^2$
           </div>
         </div>
@@ -179,34 +177,34 @@
     </div>
 
     <!-- Intuitive Conceptual Callout Box -->
-    <div class="mt-3.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60">
+    <div class="mt-3.5 p-3 rounded-xl bg-amber-950/40 border border-amber-700/60">
       <div class="flex items-start gap-2">
-        <i data-lucide="sparkles" class="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0"></i>
-        <div class="text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
+        <i data-lucide="sparkles" class="w-4 h-4 text-amber-400 mt-0.5 shrink-0"></i>
+        <div class="text-[11px] text-amber-200 leading-relaxed">
           <span class="font-bold">귤껍질 원리:</span> 귤의 겉껍질을 4등분하여 평평하게 펼치면, 귤 단면과 똑같은 크기의 원 4개를 빈틈없이 채웁니다! 따라서 <span class="font-bold underline">구의 겉넓이는 <span class="inline-math">4\pi r^2</span></span>입니다.
         </div>
       </div>
     </div>
 
     <!-- 4 Quadrants Legend -->
-    <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800">
-      <div class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1.5">조각별 대응 원판:</div>
+    <div class="mt-3 pt-3 border-t border-slate-800">
+      <div class="text-[11px] font-semibold text-slate-300 mb-1.5">조각별 대응 원판:</div>
       <div class="grid grid-cols-2 gap-1.5 text-[11px]">
         <div class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-[#FF6B6B]"></span>
-          <span class="text-slate-600 dark:text-slate-300">조각 1 (코랄 레드)</span>
+          <span class="text-slate-200 font-medium">조각 1 (코랄 레드)</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-[#FFA94D]"></span>
-          <span class="text-slate-600 dark:text-slate-300">조각 2 (앰버 골드)</span>
+          <span class="text-slate-200 font-medium">조각 2 (앰버 골드)</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-[#51CF66]"></span>
-          <span class="text-slate-600 dark:text-slate-300">조각 3 (에메랄드)</span>
+          <span class="text-slate-200 font-medium">조각 3 (에메랄드)</span>
         </div>
         <div class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-[#339AF0]"></span>
-          <span class="text-slate-600 dark:text-slate-300">조각 4 (오션 블루)</span>
+          <span class="text-slate-200 font-medium">조각 4 (오션 블루)</span>
         </div>
       </div>
     </div>
@@ -214,7 +212,7 @@
 
   <!-- Bottom Floating Control Dock -->
   <footer class="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-2rem)] max-w-4xl pointer-events-auto">
-    <div class="glass-card rounded-2xl shadow-2xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-slate-700/80">
+    <div class="glass-card rounded-2xl shadow-2xl p-3.5 sm:p-4 border border-slate-700/80">
       
       <!-- Top Row: Timeline Slider & Playback Controls -->
       <div class="flex items-center gap-3">
@@ -227,17 +225,17 @@
 
         <!-- Timeline Progress Slider -->
         <div class="flex-1 flex flex-col gap-1">
-          <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <div class="flex items-center justify-between text-xs text-slate-300 font-medium">
             <span class="flex items-center gap-1">
               <i data-lucide="activity" class="w-3.5 h-3.5"></i>
               모핑 진행 타임라인
             </span>
-            <span id="slider-progress-label" class="font-mono text-blue-600 dark:text-blue-400 font-bold">0.0%</span>
+            <span id="slider-progress-label" class="font-mono text-blue-400 font-bold">0.0%</span>
           </div>
           <input id="timeline-slider" type="range" min="0" max="100" value="0" step="0.5"
             aria-label="모핑 타임라인 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
-            class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer focus:outline-none">
-          <div class="flex justify-between text-[10px] text-slate-400 font-medium px-0.5">
+            class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer focus:outline-none">
+          <div class="flex justify-between text-[10px] text-slate-300 font-medium px-0.5">
             <span>0% (구)</span>
             <span>30% (분리)</span>
             <span>60% (비행)</span>
@@ -246,35 +244,35 @@
         </div>
 
         <!-- Speed Selector -->
-        <div class="hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-1 border border-slate-200 dark:border-slate-700">
-          <button data-speed="0.5" class="speed-btn px-2 py-1 text-xs rounded-lg font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">0.5x</button>
-          <button data-speed="1.0" class="speed-btn active px-2 py-1 text-xs rounded-lg font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-sm transition">1x</button>
-          <button data-speed="2.0" class="speed-btn px-2 py-1 text-xs rounded-lg font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">2x</button>
+        <div class="hidden sm:flex items-center bg-slate-800 rounded-xl p-1 gap-1 border border-slate-700">
+          <button data-speed="0.5" class="speed-btn px-2 py-1 text-xs rounded-lg font-medium text-slate-300 hover:text-white transition">0.5x</button>
+          <button data-speed="1.0" class="speed-btn active px-2 py-1 text-xs rounded-lg font-bold bg-slate-700 text-blue-300 shadow-sm transition">1x</button>
+          <button data-speed="2.0" class="speed-btn px-2 py-1 text-xs rounded-lg font-medium text-slate-300 hover:text-white transition">2x</button>
         </div>
       </div>
 
       <!-- Bottom Row: Radius Slider & Options -->
-      <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+      <div class="mt-3 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
         <!-- Radius Controller -->
         <div class="flex items-center gap-3 flex-1 min-w-[200px]">
-          <label for="radius-slider" class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1 shrink-0">
+          <label for="radius-slider" class="text-xs font-semibold text-slate-200 flex items-center gap-1 shrink-0">
             <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-blue-500"></i>
             반지름(r):
-            <span id="radius-value" class="font-mono text-blue-600 dark:text-blue-400 ml-1">5.0 cm</span>
+            <span id="radius-value" class="font-mono text-blue-400 ml-1 font-bold">5.0 cm</span>
           </label>
           <input id="radius-slider" type="range" min="1" max="10" value="5" step="0.1"
-            class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer focus:outline-none">
+            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer focus:outline-none">
         </div>
 
         <!-- Toggles: Wireframe & Quad Colors -->
-        <div class="flex items-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-400">
+        <div class="flex items-center gap-4 text-xs font-medium text-slate-200">
           <label class="inline-flex items-center gap-1.5 cursor-pointer">
-            <input id="toggle-wireframe" type="checkbox" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300">
+            <input id="toggle-wireframe" type="checkbox" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-600">
             <span>구 가이드 격자</span>
           </label>
 
           <label class="inline-flex items-center gap-1.5 cursor-pointer">
-            <input id="toggle-color" type="checkbox" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300">
+            <input id="toggle-color" type="checkbox" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-600">
             <span>4색 분할 강조</span>
           </label>
         </div>
@@ -285,47 +283,47 @@
   <!-- Help & Guide Modal Dialog -->
   <div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title"
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-    <div class="glass-card max-w-lg w-full rounded-2xl shadow-2xl p-6 border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+    <div class="glass-card max-w-lg w-full rounded-2xl shadow-2xl p-6 border border-slate-700 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <div class="flex items-center gap-2">
-          <div class="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+          <div class="p-2 rounded-xl bg-blue-900/50 text-blue-400">
             <i data-lucide="book-open" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 id="help-modal-title" class="text-base font-bold text-slate-900 dark:text-white">학습 가이드 & 조작법</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">중학교 1학년 수학 | 구의 겉넓이 탐구</p>
+            <h3 id="help-modal-title" class="text-base font-bold text-white">학습 가이드 & 조작법</h3>
+            <p class="text-xs text-slate-300">중학교 1학년 수학 | 구의 겉넓이 탐구</p>
           </div>
         </div>
-        <button id="close-help-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg">
+        <button id="close-help-btn" class="text-slate-300 hover:text-white p-1 rounded-lg">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div class="mt-4 space-y-4 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+      <div class="mt-4 space-y-4 text-xs text-slate-200 leading-relaxed">
         <!-- 3D Controls -->
         <div>
-          <h4 class="font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-1 text-sm">
+          <h4 class="font-bold text-white mb-2 flex items-center gap-1 text-sm">
             <i data-lucide="mouse-pointer" class="w-4 h-4 text-blue-500"></i> 3D 화면 조작법
           </h4>
           <ul class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
-            <li class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <div class="font-bold text-blue-600 dark:text-blue-400 mb-0.5">좌클릭 드래그</div>
-              <div class="text-[11px] text-slate-500">360도 자유 회전</div>
+            <li class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+              <div class="font-bold text-blue-400 mb-0.5">좌클릭 드래그</div>
+              <div class="text-[11px] text-slate-300">360도 자유 회전</div>
             </li>
-            <li class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <div class="font-bold text-emerald-600 dark:text-emerald-400 mb-0.5">마우스 휠</div>
-              <div class="text-[11px] text-slate-500">확대 / 축소</div>
+            <li class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+              <div class="font-bold text-emerald-400 mb-0.5">마우스 휠</div>
+              <div class="text-[11px] text-slate-300">확대 / 축소</div>
             </li>
-            <li class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-              <div class="font-bold text-amber-600 dark:text-amber-400 mb-0.5">우클릭 드래그</div>
-              <div class="text-[11px] text-slate-500">화면 이동(팬)</div>
+            <li class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+              <div class="font-bold text-amber-400 mb-0.5">우클릭 드래그</div>
+              <div class="text-[11px] text-slate-300">화면 이동(팬)</div>
             </li>
           </ul>
         </div>
 
         <!-- Educational Core Concept -->
-        <div class="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 space-y-1.5">
-          <h4 class="font-bold text-blue-900 dark:text-blue-200 text-sm flex items-center gap-1">
+        <div class="p-3.5 rounded-xl bg-blue-950/50 border border-blue-800/60 space-y-1.5">
+          <h4 class="font-bold text-blue-200 text-sm flex items-center gap-1">
             <i data-lucide="check-circle" class="w-4 h-4"></i> 공식 유도 핵심 아이디어
           </h4>
           <p id="help-modal-concept">
@@ -337,7 +335,7 @@
         </div>
 
         <!-- Hotkeys -->
-        <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-3">
+        <div class="text-[11px] text-slate-300 flex items-center justify-between border-t border-slate-800 pt-3">
           <span>단축키: <strong>Space</strong> (재생/일시정지), <strong>R</strong> (시점 리셋)</span>
           <span>버전 1.0.0</span>
         </div>
@@ -345,11 +343,123 @@
     </div>
   </div>
 
-  <!-- Interactive JavaScript Logic -->
-  <script type="module">
-    // Import math logic
-    import { computeCircleArea, computeSphereArea, getQuadrantGoreVertex, getDiskCenter } from './src/math-core.js';
-    import { determineStepIndex, clampProgress, calculatePlaybackDelta } from './src/animation-logic.js';
+  <!-- Interactive JavaScript Logic (Zero-Setup standalone script without CORS/file:// restrictions) -->
+  <script>
+    // ==========================================
+    // Math Core & Animation Logic (Inlined for 100% Zero-Setup file:/// standalone compatibility)
+    // ==========================================
+    function computeCircleArea(r) {
+      return Math.PI * r * r;
+    }
+
+    function computeSphereArea(r) {
+      return 4 * Math.PI * r * r;
+    }
+
+    function getDiskCenter(index, r) {
+      const spacing = 1.45 * r;
+      const targetY = -1.8 * r;
+      const idx = ((index % 4) + 4) % 4;
+      const signs = [
+        { x:  1, z:  1 }, // Quad 0: [0, pi/2] -> x > 0, z > 0
+        { x: -1, z:  1 }, // Quad 1: [pi/2, pi] -> x < 0, z > 0
+        { x: -1, z: -1 }, // Quad 2: [pi, 3pi/2] -> x < 0, z < 0
+        { x:  1, z: -1 }  // Quad 3: [3pi/2, 2pi] -> x > 0, z < 0
+      ];
+      return {
+        x: signs[idx].x * spacing,
+        y: targetY,
+        z: signs[idx].z * spacing
+      };
+    }
+
+    function getQuadrantGoreVertex(u, v, t, r, quadIndex) {
+      const clampedT = Math.min(1.0, Math.max(0.0, t));
+      const normalizedQuad = ((quadIndex % 4) + 4) % 4;
+
+      const phi = u * Math.PI;
+      const thetaStart = normalizedQuad * (Math.PI / 2);
+      const theta = thetaStart + v * (Math.PI / 2);
+
+      const sx = r * Math.sin(phi) * Math.cos(theta);
+      const sy = r * Math.cos(phi);
+      const sz = r * Math.sin(phi) * Math.sin(theta);
+
+      const midTheta = thetaStart + Math.PI / 4;
+      const midPhi = Math.PI / 2;
+      const dirX = Math.sin(midPhi) * Math.cos(midTheta);
+      const dirY = 0;
+      const dirZ = Math.sin(midPhi) * Math.sin(midTheta);
+
+      const center = getDiskCenter(normalizedQuad, r);
+      const diskAngle = v * 2 * Math.PI;
+      const diskRadius = r * Math.sin(u * Math.PI * 0.5);
+      const dx = center.x + diskRadius * Math.cos(diskAngle);
+      const dy = center.y;
+      const dz = center.z + diskRadius * Math.sin(diskAngle);
+
+      if (clampedT <= 0.2) {
+        return { x: sx, y: sy, z: sz };
+      } else if (clampedT <= 0.45) {
+        const tau = (clampedT - 0.2) / 0.25;
+        const separation = 0.5 * r * tau;
+        return {
+          x: sx + dirX * separation,
+          y: sy + dirY * separation,
+          z: sz + dirZ * separation
+        };
+      } else if (clampedT <= 0.75) {
+        const tau = (clampedT - 0.45) / 0.3;
+        const easeTau = tau * tau * (3 - 2 * tau);
+
+        const hoverY = center.y + 0.5 * r;
+        const curCenterX = (1 - easeTau) * (dirX * 0.5 * r) + easeTau * center.x;
+        const curCenterY = (1 - easeTau) * 0 + easeTau * hoverY;
+        const curCenterZ = (1 - easeTau) * (dirZ * 0.5 * r) + easeTau * center.z;
+
+        const relX = (1 - easeTau) * (sx) + easeTau * (dx - center.x);
+        const relY = (1 - easeTau) * (sy) + easeTau * 0;
+        const relZ = (1 - easeTau) * (sz) + easeTau * (dz - center.z);
+
+        return {
+          x: curCenterX + relX,
+          y: curCenterY + relY,
+          z: curCenterZ + relZ
+        };
+      } else {
+        const tau = (clampedT - 0.75) / 0.25;
+        const easeTau = tau * tau * (3 - 2 * tau);
+        const hoverY = center.y + 0.5 * r;
+
+        const p3x = dx;
+        const p3y = hoverY;
+        const p3z = dz;
+
+        return {
+          x: p3x,
+          y: (1 - easeTau) * p3y + easeTau * dy,
+          z: p3z
+        };
+      }
+    }
+
+    function determineStepIndex(progress) {
+      if (progress < 0.25) return 0;
+      if (progress < 0.55) return 1;
+      if (progress < 0.85) return 2;
+      return 3;
+    }
+
+    function clampProgress(p) {
+      if (typeof p !== 'number' || Number.isNaN(p)) return 0.0;
+      return Math.min(1.0, Math.max(0.0, p));
+    }
+
+    function calculatePlaybackDelta(currentTime, lastTime, speed = 1.0) {
+      const dtSec = Math.max(0, (currentTime - lastTime) / 1000);
+      const clampedDelta = Math.min(dtSec, 0.1);
+      return (clampedDelta / 6.0) * speed;
+    }
 
     // Application State
     const appState = {
@@ -577,7 +687,7 @@
         if (idx === stepIndex) {
           btn.className = 'step-btn active py-1.5 px-1 rounded-lg text-xs font-bold text-center bg-blue-600 text-white shadow-sm transition';
         } else {
-          btn.className = 'step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition';
+          btn.className = 'step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white transition';
         }
       });
     }
@@ -651,11 +761,11 @@
     speedButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         speedButtons.forEach(b => {
-          b.classList.remove('active', 'bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-300', 'font-bold', 'shadow-sm');
-          b.classList.add('text-slate-600', 'dark:text-slate-400', 'font-medium');
+          b.classList.remove('active', 'bg-slate-700', 'text-blue-300', 'font-bold', 'shadow-sm');
+          b.classList.add('text-slate-300', 'hover:text-white', 'font-medium');
         });
-        btn.classList.add('active', 'bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-300', 'font-bold', 'shadow-sm');
-        btn.classList.remove('text-slate-600', 'dark:text-slate-400');
+        btn.classList.add('active', 'bg-slate-700', 'text-blue-300', 'font-bold', 'shadow-sm');
+        btn.classList.remove('text-slate-300', 'hover:text-white');
         appState.speed = parseFloat(btn.dataset.speed);
       });
     });
@@ -1210,6 +1320,13 @@
 
     // Expose Hooks for Task 3 & Task 4
     window.appState = appState;
+    window.computeCircleArea = computeCircleArea;
+    window.computeSphereArea = computeSphereArea;
+    window.getQuadrantGoreVertex = getQuadrantGoreVertex;
+    window.getDiskCenter = getDiskCenter;
+    window.determineStepIndex = determineStepIndex;
+    window.clampProgress = clampProgress;
+    window.calculatePlaybackDelta = calculatePlaybackDelta;
     window.setTimelineProgress = setTimelineProgress;
     window.setRadius = setRadius;
     window.updateMathFormulas = updateMathFormulas;
