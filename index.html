@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌐 구의 겉넓이(4πr²) 원리 시각화 인터랙티브 Lab</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            coral: '#FF6B6B',
+            amber: '#FFA94D',
+            emerald: '#51CF66',
+            ocean: '#339AF0',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- KaTeX CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom scrollbar and smooth transitions */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.4);
+      border-radius: 9999px;
+    }
+    .glass-card {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    @media (prefers-color-scheme: dark) {
+      .glass-card {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(51, 65, 85, 0.8);
+      }
+    }
+    input[type=range] {
+      accent-color: #3b82f6;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden select-none font-sans antialiased w-screen h-screen relative">
+
+  <!-- 3D WebGL Canvas Container -->
+  <div id="canvas-container" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+
+  <!-- Top Header Navigation Bar -->
+  <header class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+    <!-- Title & Badge -->
+    <div class="pointer-events-auto flex items-center gap-3 glass-card px-4 py-2.5 rounded-2xl shadow-lg border border-white/20">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md">
+        <i data-lucide="globe" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-800 dark:text-white">
+            구의 겉넓이(<span class="inline-math">4\pi r^2</span>) 원리 시각화 인터랙티브 Lab
+          </h1>
+          <span class="hidden md:inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+            중1 수학
+          </span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+          입체도형의 겉넓이 | 구의 표면적 = 같은 반지름 원 4개의 넓이 ($S = 4\pi r^2$)
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="pointer-events-auto flex items-center gap-2">
+      <button id="reset-view-btn" title="카메라 시점 초기화"
+        class="glass-card hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 p-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 text-xs font-medium">
+        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">시점 초기화</span>
+      </button>
+
+      <button id="help-btn" title="조작법 및 개념 안내"
+        class="glass-card hover:bg-blue-50 dark:hover:bg-blue-950/50 text-blue-600 dark:text-blue-400 p-2.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 text-xs font-medium">
+        <i data-lucide="help-circle" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">학습 가이드</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Left Floating Panel: Math Explanations & Realtime Formulas -->
+  <aside id="math-panel"
+    class="glass-card absolute top-20 left-4 z-20 w-80 sm:w-96 max-h-[calc(100vh-13rem)] overflow-y-auto rounded-2xl shadow-2xl p-5 border border-slate-200/80 dark:border-slate-700/80 transition-all duration-300">
+    
+    <!-- Stage Header & Badge -->
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+      <div class="flex items-center gap-2">
+        <span id="stage-badge" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-500 text-white shadow-sm">
+          1단계
+        </span>
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          원리 탐구
+        </span>
+      </div>
+      <div id="timeline-percent" class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
+        진행률 0%
+      </div>
+    </div>
+
+    <!-- Step Explanation Text -->
+    <div class="my-3">
+      <h2 id="step-title" class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block animate-pulse"></span>
+        온전한 구 상태 관찰
+      </h2>
+      <p id="step-text" class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+        반지름이 $r$인 온전한 구의 겉면입니다. 이 겉껍질을 같은 넓이의 4개 조각(오렌지 껍질 형태)으로 분리해 바닥의 원 4개와 비교해 봅시다.
+      </p>
+    </div>
+
+    <!-- Quick Step Buttons -->
+    <div class="grid grid-cols-4 gap-1.5 my-3">
+      <button id="step-1-btn" class="step-btn active py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-blue-600 text-white shadow-sm transition hover:bg-blue-700">
+        1. 구
+      </button>
+      <button id="step-2-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+        2. 분리
+      </button>
+      <button id="step-3-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+        3. 비행
+      </button>
+      <button id="step-4-btn" class="step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+        4. 채우기
+      </button>
+    </div>
+
+    <!-- Realtime Formula Calculation Box -->
+    <div class="mt-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-2.5">
+      <div class="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+        <span>📐 실시간 수치 계산기</span>
+        <span class="text-[11px] text-blue-500 font-mono">단위: cm, cm²</span>
+      </div>
+
+      <div id="formula-calc" class="text-xs space-y-2 text-slate-800 dark:text-slate-200 leading-normal">
+        <div class="flex items-center justify-between p-1.5 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/50">
+          <span class="text-slate-500 dark:text-slate-400">구의 반지름:</span>
+          <span id="calc-radius" class="font-mono font-bold text-blue-600 dark:text-blue-400">$r = 5.0\text{ cm}$</span>
+        </div>
+        <div class="flex items-center justify-between p-1.5 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/50">
+          <span class="text-slate-500 dark:text-slate-400">바닥 원 1개 넓이:</span>
+          <span id="calc-circle" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">$\pi r^2 \approx 78.54\text{ cm}^2$</span>
+        </div>
+        <div class="p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-900/60">
+          <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-1">구의 겉넓이 공식 유도:</div>
+          <div id="calc-sphere" class="font-mono font-bold text-indigo-700 dark:text-indigo-300 text-center text-sm">
+            $S = 4 \times (\pi r^2) = 4\pi r^2 \approx 314.16\text{ cm}^2$
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intuitive Conceptual Callout Box -->
+    <div class="mt-3.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60">
+      <div class="flex items-start gap-2">
+        <i data-lucide="sparkles" class="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0"></i>
+        <div class="text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
+          <span class="font-bold">귤껍질 원리:</span> 귤의 겉껍질을 4등분하여 평평하게 펼치면, 귤 단면과 똑같은 크기의 원 4개를 빈틈없이 채웁니다! 따라서 <span class="font-bold underline">구의 겉넓이는 $4\pi r^2$</span>입니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Quadrants Legend -->
+    <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+      <div class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1.5">조각별 대응 원판:</div>
+      <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#FF6B6B]"></span>
+          <span class="text-slate-600 dark:text-slate-300">조각 1 (코랄 레드)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#FFA94D]"></span>
+          <span class="text-slate-600 dark:text-slate-300">조각 2 (앰버 골드)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#51CF66]"></span>
+          <span class="text-slate-600 dark:text-slate-300">조각 3 (에메랄드)</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#339AF0]"></span>
+          <span class="text-slate-600 dark:text-slate-300">조각 4 (오션 블루)</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Bottom Floating Control Dock -->
+  <footer class="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-2rem)] max-w-4xl pointer-events-auto">
+    <div class="glass-card rounded-2xl shadow-2xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-slate-700/80">
+      
+      <!-- Top Row: Timeline Slider & Playback Controls -->
+      <div class="flex items-center gap-3">
+        <!-- Play / Pause Button -->
+        <button id="play-btn" title="재생 / 일시정지 (Space)"
+          class="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md active:scale-95 transition shrink-0">
+          <i id="play-icon" data-lucide="play" class="w-5 h-5 ml-0.5"></i>
+        </button>
+
+        <!-- Timeline Progress Slider -->
+        <div class="flex-1 flex flex-col gap-1">
+          <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <span class="flex items-center gap-1">
+              <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+              모핑 진행 타임라인
+            </span>
+            <span id="slider-progress-label" class="font-mono text-blue-600 dark:text-blue-400 font-bold">0.0%</span>
+          </div>
+          <input id="timeline-slider" type="range" min="0" max="100" value="0" step="0.5"
+            class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer focus:outline-none">
+          <div class="flex justify-between text-[10px] text-slate-400 font-medium px-0.5">
+            <span>0% (구)</span>
+            <span>30% (분리)</span>
+            <span>60% (비행)</span>
+            <span>100% (원 4개 완성)</span>
+          </div>
+        </div>
+
+        <!-- Speed Selector -->
+        <div class="hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-1 border border-slate-200 dark:border-slate-700">
+          <button data-speed="0.5" class="speed-btn px-2 py-1 text-xs rounded-lg font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">0.5x</button>
+          <button data-speed="1.0" class="speed-btn active px-2 py-1 text-xs rounded-lg font-bold bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-sm transition">1x</button>
+          <button data-speed="2.0" class="speed-btn px-2 py-1 text-xs rounded-lg font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">2x</button>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Radius Slider & Options -->
+      <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        <!-- Radius Controller -->
+        <div class="flex items-center gap-3 flex-1 min-w-[200px]">
+          <label for="radius-slider" class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1 shrink-0">
+            <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-blue-500"></i>
+            반지름(r):
+            <span id="radius-value" class="font-mono text-blue-600 dark:text-blue-400 ml-1">5.0 cm</span>
+          </label>
+          <input id="radius-slider" type="range" min="1" max="10" value="5" step="0.1"
+            class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer focus:outline-none">
+        </div>
+
+        <!-- Toggles: Wireframe & Quad Colors -->
+        <div class="flex items-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-400">
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input id="toggle-wireframe" type="checkbox" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300">
+            <span>구 가이드 격자</span>
+          </label>
+
+          <label class="inline-flex items-center gap-1.5 cursor-pointer">
+            <input id="toggle-color" type="checkbox" checked class="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300">
+            <span>4색 분할 강조</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Help & Guide Modal Dialog -->
+  <div id="help-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-card max-w-lg w-full rounded-2xl shadow-2xl p-6 border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">학습 가이드 & 조작법</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">중학교 1학년 수학 | 구의 겉넓이 탐구</p>
+          </div>
+        </div>
+        <button id="close-help-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-4 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+        <!-- 3D Controls -->
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-1 text-sm">
+            <i data-lucide="mouse-pointer" class="w-4 h-4 text-blue-500"></i> 3D 화면 조작법
+          </h4>
+          <ul class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
+            <li class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <div class="font-bold text-blue-600 dark:text-blue-400 mb-0.5">좌클릭 드래그</div>
+              <div class="text-[11px] text-slate-500">360도 자유 회전</div>
+            </li>
+            <li class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <div class="font-bold text-emerald-600 dark:text-emerald-400 mb-0.5">마우스 휠</div>
+              <div class="text-[11px] text-slate-500">확대 / 축소</div>
+            </li>
+            <li class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <div class="font-bold text-amber-600 dark:text-amber-400 mb-0.5">우클릭 드래그</div>
+              <div class="text-[11px] text-slate-500">화면 이동(팬)</div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Educational Core Concept -->
+        <div class="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 space-y-1.5">
+          <h4 class="font-bold text-blue-900 dark:text-blue-200 text-sm flex items-center gap-1">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> 공식 유도 핵심 아이디어
+          </h4>
+          <p>
+            1. 반지름이 $r$인 구의 표면을 경도 90°씩 4개의 균일한 조각(Quadrant Gores)으로 나눕니다.<br>
+            2. 각 조각의 겉넓이는 구 전체 겉넓이의 $\frac{1}{4}$입니다.<br>
+            3. 이 조각을 평면으로 펼치면 반지름이 $r$인 원(넓이 $\pi r^2$) 1개를 완전히 채우게 됩니다.<br>
+            4. 따라서 4조각을 합친 구의 전체 겉넓이는 <strong>$4 \times \pi r^2 = 4\pi r^2$</strong>가 됩니다!
+          </p>
+        </div>
+
+        <!-- Hotkeys -->
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-3">
+          <span>단축키: <strong>Space</strong> (재생/일시정지), <strong>R</strong> (시점 리셋)</span>
+          <span>버전 1.0.0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive JavaScript Logic -->
+  <script type="module">
+    // Import math logic
+    import { computeCircleArea, computeSphereArea, getQuadrantGoreVertex, getDiskCenter } from './src/math-core.js';
+
+    // Application State
+    const appState = {
+      progress: 0.0,         // 0.0 ~ 1.0
+      targetProgress: 0.0,
+      radius: 5.0,           // 1.0 ~ 10.0 cm
+      isPlaying: false,
+      speed: 1.0,
+      showWireframe: true,
+      showColor: true,
+      currentStep: 0         // 0, 1, 2, 3
+    };
+
+    // DOM Elements
+    const timelineSlider = document.getElementById('timeline-slider');
+    const radiusSlider = document.getElementById('radius-slider');
+    const radiusValue = document.getElementById('radius-value');
+    const playBtn = document.getElementById('play-btn');
+    const playIcon = document.getElementById('play-icon');
+    const stepText = document.getElementById('step-text');
+    const stepTitle = document.getElementById('step-title');
+    const stageBadge = document.getElementById('stage-badge');
+    const timelinePercent = document.getElementById('timeline-percent');
+    const sliderProgressLabel = document.getElementById('slider-progress-label');
+    const formulaCalc = document.getElementById('formula-calc');
+    const calcRadius = document.getElementById('calc-radius');
+    const calcCircle = document.getElementById('calc-circle');
+    const calcSphere = document.getElementById('calc-sphere');
+    const resetViewBtn = document.getElementById('reset-view-btn');
+    const helpBtn = document.getElementById('help-btn');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelpBtn = document.getElementById('close-help-btn');
+    const speedButtons = document.querySelectorAll('.speed-btn');
+    const stepButtons = [
+      document.getElementById('step-1-btn'),
+      document.getElementById('step-2-btn'),
+      document.getElementById('step-3-btn'),
+      document.getElementById('step-4-btn')
+    ];
+
+    // Initialize Lucide Icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+
+    // Update KaTeX Formulas
+    function updateMathFormulas(r) {
+      const circleArea = computeCircleArea(r);
+      const sphereArea = computeSphereArea(r);
+
+      if (window.katex) {
+        window.katex.render(`r = ${r.toFixed(1)}\\text{ cm}`, calcRadius, { throwOnError: false });
+        window.katex.render(`\\pi r^2 \\approx ${circleArea.toFixed(2)}\\text{ cm}^2`, calcCircle, { throwOnError: false });
+        window.katex.render(`S = 4 \\times (\\pi r^2) = 4\\pi r^2 \\approx ${sphereArea.toFixed(2)}\\text{ cm}^2`, calcSphere, { throwOnError: false });
+      }
+    }
+
+    // Step Explanations
+    const stepsData = [
+      {
+        badge: '1단계',
+        title: '온전한 구 상태 관찰',
+        text: '반지름이 $r$인 온전한 구의 겉면입니다. 이 겉껍질을 같은 넓이의 4개 조각(오렌지 껍질 형태)으로 분리해 바닥의 원 4개와 비교해 봅시다.',
+        progress: 0.0
+      },
+      {
+        badge: '2단계',
+        title: '4개의 균등한 조각(엽) 분리',
+        text: '구의 표면을 경도 90°씩 4개의 균일한 조각으로 방사형 분리합니다. 각 조각은 전체 겉넓이의 정확히 $\\frac{1}{4}$을 차지합니다.',
+        progress: 0.35
+      },
+      {
+        badge: '3단계',
+        title: '바닥의 원 상공으로 비행',
+        text: '분리된 4개의 껍질 조각들이 바닥에 미리 그려둔 반지름 $r$인 4개의 기준 원 위로 완만한 포물선을 그리며 날아갑니다.',
+        progress: 0.65
+      },
+      {
+        badge: '4단계',
+        title: '평면화 및 원 4개 채우기 완성',
+        text: '곡면 조각들이 바닥 원판에 닿으며 완벽히 평평하게 펴져 반지름 $r$인 원 4개를 남김없이 채웁니다! 즉, $S = 4 \\times \\pi r^2 = 4\\pi r^2$ 임이 증명됩니다.',
+        progress: 1.0
+      }
+    ];
+
+    function updateStepUI(progress) {
+      let stepIndex = 0;
+      if (progress < 0.25) stepIndex = 0;
+      else if (progress < 0.55) stepIndex = 1;
+      else if (progress < 0.85) stepIndex = 2;
+      else stepIndex = 3;
+
+      appState.currentStep = stepIndex;
+      const data = stepsData[stepIndex];
+
+      stageBadge.textContent = data.badge;
+      stepTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500 inline-block animate-pulse"></span> ${data.title}`;
+      
+      if (window.katex) {
+        stepText.innerHTML = data.text.replace(/\$([^$]+)\$/g, (match, formula) => {
+          try {
+            return window.katex.renderToString(formula, { throwOnError: false });
+          } catch (e) {
+            return match;
+          }
+        });
+      } else {
+        stepText.textContent = data.text;
+      }
+
+      // Step Buttons Active Style
+      stepButtons.forEach((btn, idx) => {
+        if (!btn) return;
+        if (idx === stepIndex) {
+          btn.className = 'step-btn active py-1.5 px-1 rounded-lg text-xs font-bold text-center bg-blue-600 text-white shadow-sm transition';
+        } else {
+          btn.className = 'step-btn py-1.5 px-1 rounded-lg text-xs font-medium text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition';
+        }
+      });
+    }
+
+    // Set Timeline Progress
+    function setTimelineProgress(p) {
+      appState.progress = Math.min(1.0, Math.max(0.0, p));
+      const percent = (appState.progress * 100).toFixed(1);
+      timelineSlider.value = percent;
+      sliderProgressLabel.textContent = `${percent}%`;
+      timelinePercent.textContent = `진행률 ${Math.round(percent)}%`;
+      updateStepUI(appState.progress);
+      
+      // Hook for 3D update
+      if (window.updateMorphingGeometry) {
+        window.updateMorphingGeometry(appState.progress, appState.radius);
+      }
+    }
+
+    // Event Listeners
+    timelineSlider.addEventListener('input', (e) => {
+      setTimelineProgress(parseFloat(e.target.value) / 100);
+    });
+
+    radiusSlider.addEventListener('input', (e) => {
+      const r = parseFloat(e.target.value);
+      appState.radius = r;
+      radiusValue.textContent = `${r.toFixed(1)} cm`;
+      updateMathFormulas(r);
+      if (window.updateMorphingGeometry) {
+        window.updateMorphingGeometry(appState.progress, appState.radius);
+      }
+    });
+
+    // Step Quick Jump Buttons
+    stepButtons.forEach((btn, idx) => {
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        setTimelineProgress(stepsData[idx].progress);
+      });
+    });
+
+    // Play/Pause Toggle
+    function togglePlay() {
+      appState.isPlaying = !appState.isPlaying;
+      if (appState.isPlaying) {
+        if (appState.progress >= 1.0) {
+          setTimelineProgress(0);
+        }
+        playIcon.setAttribute('data-lucide', 'pause');
+        playBtn.classList.replace('bg-blue-600', 'bg-amber-600');
+        playBtn.classList.replace('hover:bg-blue-700', 'hover:bg-amber-700');
+      } else {
+        playIcon.setAttribute('data-lucide', 'play');
+        playBtn.classList.replace('bg-amber-600', 'bg-blue-600');
+        playBtn.classList.replace('hover:bg-amber-700', 'hover:bg-blue-700');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+    playBtn.addEventListener('click', togglePlay);
+
+    // Speed Controls
+    speedButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        speedButtons.forEach(b => {
+          b.classList.remove('active', 'bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-300', 'font-bold', 'shadow-sm');
+          b.classList.add('text-slate-600', 'dark:text-slate-400', 'font-medium');
+        });
+        btn.classList.add('active', 'bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-300', 'font-bold', 'shadow-sm');
+        btn.classList.remove('text-slate-600', 'dark:text-slate-400');
+        appState.speed = parseFloat(btn.dataset.speed);
+      });
+    });
+
+    // Help Modal Open / Close
+    function openHelp() {
+      helpModal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        helpModal.classList.remove('opacity-0');
+      });
+    }
+    function closeHelp() {
+      helpModal.classList.add('opacity-0');
+      setTimeout(() => {
+        helpModal.classList.add('hidden');
+      }, 300);
+    }
+    helpBtn.addEventListener('click', openHelp);
+    closeHelpBtn.addEventListener('click', closeHelp);
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) closeHelp();
+    });
+
+    // Reset View Button
+    resetViewBtn.addEventListener('click', () => {
+      if (window.resetCameraView) {
+        window.resetCameraView();
+      }
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.key === 'r' || e.key === 'R') {
+        if (window.resetCameraView) window.resetCameraView();
+      } else if (e.key === 'Escape') {
+        closeHelp();
+      }
+    });
+
+    // Expose Hooks for Task 3 & Task 4
+    window.appState = appState;
+    window.setTimelineProgress = setTimelineProgress;
+    window.updateMathFormulas = updateMathFormulas;
+
+    // Initial Math Update
+    updateMathFormulas(appState.radius);
+    updateStepUI(0.0);
+  </script>
+</body>
+</html>
