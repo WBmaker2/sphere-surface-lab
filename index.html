@@ -481,12 +481,14 @@
       }
     }
 
-    // Render all static inline math elements
+    // Render all static inline math elements idempotently
     function renderInlineMathElements() {
       if (window.katex) {
         document.querySelectorAll('.inline-math').forEach(el => {
           try {
-            window.katex.render(el.textContent.trim(), el, { throwOnError: false });
+            const rawTex = el.dataset.tex || el.textContent.trim();
+            el.dataset.tex = rawTex;
+            window.katex.render(rawTex, el, { throwOnError: false });
           } catch (e) {}
         });
       }
