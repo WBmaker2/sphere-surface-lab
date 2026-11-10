@@ -9,22 +9,26 @@ export function computeSphereArea(r) {
 export function getDiskCenter(index, r) {
   const spacing = 1.45 * r;
   const targetY = -1.8 * r;
+  const idx = ((index % 4) + 4) % 4;
   const signs = [
-    { x: -1, z: -1 }, // 0
-    { x:  1, z: -1 }, // 1
-    { x: -1, z:  1 }, // 2
-    { x:  1, z:  1 }  // 3
+    { x:  1, z:  1 }, // Quad 0: [0, pi/2] -> x > 0, z > 0
+    { x: -1, z:  1 }, // Quad 1: [pi/2, pi] -> x < 0, z > 0
+    { x: -1, z: -1 }, // Quad 2: [pi, 3pi/2] -> x < 0, z < 0
+    { x:  1, z: -1 }  // Quad 3: [3pi/2, 2pi] -> x > 0, z < 0
   ];
   return {
-    x: signs[index].x * spacing,
+    x: signs[idx].x * spacing,
     y: targetY,
-    z: signs[index].z * spacing
+    z: signs[idx].z * spacing
   };
 }
 
 export function getQuadrantGoreVertex(u, v, t, r, quadIndex) {
+  const clampedT = Math.min(1.0, Math.max(0.0, t));
+  const normalizedQuad = ((quadIndex % 4) + 4) % 4;
+
   const phi = u * Math.PI;
-  const thetaStart = quadIndex * (Math.PI / 2);
+  const thetaStart = normalizedQuad * (Math.PI / 2);
   const theta = thetaStart + v * (Math.PI / 2);
 
   const sx = r * Math.sin(phi) * Math.cos(theta);
@@ -37,29 +41,26 @@ export function getQuadrantGoreVertex(u, v, t, r, quadIndex) {
   const dirY = 0;
   const dirZ = Math.sin(midPhi) * Math.sin(midTheta);
 
-  const center = getDiskCenter(quadIndex, r);
+  const center = getDiskCenter(normalizedQuad, r);
   const diskAngle = v * 2 * Math.PI;
   const diskRadius = r * Math.sin(u * Math.PI * 0.5);
   const dx = center.x + diskRadius * Math.cos(diskAngle);
   const dy = center.y;
   const dz = center.z + diskRadius * Math.sin(diskAngle);
 
-  if (t <= 0.2) {
+  if (clampedT <= 0.2) {
     return { x: sx, y: sy, z: sz };
-  } else if (t <= 0.45) {
-    const tau = (t - 0.2) / 0.25;
+  } else if (clampedT <= 0.45) {
+    const tau = (clampedT - 0.2) / 0.25;
     const separation = 0.5 * r * tau;
     return {
       x: sx + dirX * separation,
       y: sy + dirY * separation,
       z: sz + dirZ * separation
     };
-  } else if (t <= 0.75) {
-    const tau = (t - 0.45) / 0.3;
+  } else if (clampedT <= 0.75) {
+    const tau = (clampedT - 0.45) / 0.3;
     const easeTau = tau * tau * (3 - 2 * tau);
-    const sepX = sx + dirX * (0.5 * r);
-    const sepY = sy;
-    const sepZ = sz + dirZ * (0.5 * r);
 
     const hoverY = center.y + 0.5 * r;
     const curCenterX = (1 - easeTau) * (dirX * 0.5 * r) + easeTau * center.x;
@@ -76,13 +77,13 @@ export function getQuadrantGoreVertex(u, v, t, r, quadIndex) {
       z: curCenterZ + relZ
     };
   } else {
-    const tau = (t - 0.75) / 0.25;
+    const tau = (clampedT - 0.75) / 0.25;
     const easeTau = tau * tau * (3 - 2 * tau);
     const hoverY = center.y + 0.5 * r;
 
-    const p3x = center.x + (dx - center.x);
+    const p3x = dx;
     const p3y = hoverY;
-    const p3z = center.z + (dz - center.z);
+    const p3z = dz;
 
     return {
       x: p3x,
