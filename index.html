@@ -220,6 +220,7 @@
       <div class="flex items-center gap-3">
         <!-- Play / Pause Button -->
         <button id="play-btn" title="재생 / 일시정지 (Space)"
+          aria-label="애니메이션 재생/일시정지" aria-pressed="false"
           class="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md active:scale-95 transition shrink-0">
           <i id="play-icon" data-lucide="play" class="w-5 h-5 ml-0.5"></i>
         </button>
@@ -234,6 +235,7 @@
             <span id="slider-progress-label" class="font-mono text-blue-600 dark:text-blue-400 font-bold">0.0%</span>
           </div>
           <input id="timeline-slider" type="range" min="0" max="100" value="0" step="0.5"
+            aria-label="모핑 타임라인 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
             class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer focus:outline-none">
           <div class="flex justify-between text-[10px] text-slate-400 font-medium px-0.5">
             <span>0% (구)</span>
@@ -281,7 +283,8 @@
   </footer>
 
   <!-- Help & Guide Modal Dialog -->
-  <div id="help-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+  <div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
     <div class="glass-card max-w-lg w-full rounded-2xl shadow-2xl p-6 border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
         <div class="flex items-center gap-2">
@@ -289,7 +292,7 @@
             <i data-lucide="book-open" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-900 dark:text-white">학습 가이드 & 조작법</h3>
+            <h3 id="help-modal-title" class="text-base font-bold text-slate-900 dark:text-white">학습 가이드 & 조작법</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400">중학교 1학년 수학 | 구의 겉넓이 탐구</p>
           </div>
         </div>
@@ -346,6 +349,7 @@
   <script type="module">
     // Import math logic
     import { computeCircleArea, computeSphereArea, getQuadrantGoreVertex, getDiskCenter } from './src/math-core.js';
+    import { determineStepIndex, clampProgress, calculatePlaybackDelta } from './src/animation-logic.js';
 
     // Application State
     const appState = {
@@ -418,23 +422,33 @@
     window.addEventListener('pointerdown', unlockAudio);
     window.addEventListener('keydown', unlockAudio);
 
-    function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.15) {
+    function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.15, startTime = null) {
       const ctx = getAudioContext();
       if (!ctx) return;
       try {
+        const t0 = startTime !== null ? startTime : ctx.currentTime;
+        const safeGain = Math.max(0.0001, gainVal);
+
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = type;
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.frequency.setValueAtTime(freq, t0);
 
-        gain.gain.setValueAtTime(gainVal, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        gain.gain.setValueAtTime(safeGain, t0);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
 
-        osc.start();
-        osc.stop(ctx.currentTime + duration);
+        osc.onended = () => {
+          try {
+            osc.disconnect();
+            gain.disconnect();
+          } catch (e) {}
+        };
+
+        osc.start(t0);
+        osc.stop(t0 + duration);
       } catch (e) {
         // Audio policy or error
       }
@@ -447,12 +461,11 @@
     function playChime() {
       const ctx = getAudioContext();
       if (!ctx) return;
-      // Arpeggio chime: C5 (523Hz), E5 (659Hz), G5 (784Hz), C6 (1046Hz)
+      const now = ctx.currentTime;
+      // Arpeggio chime: C5 (523Hz), E5 (659Hz), G5 (784Hz), C6 (1046Hz) scheduled accurately on audio hardware clock
       const notes = [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, idx) => {
-        setTimeout(() => {
-          playTone(freq, 'sine', 0.45, 0.18);
-        }, idx * 90);
+        playTone(freq, 'sine', 0.45, 0.18, now + idx * 0.09);
       });
     }
 
@@ -526,12 +539,7 @@
     ];
 
     function updateStepUI(progress) {
-      let stepIndex = 0;
-      if (progress < 0.25) stepIndex = 0;
-      else if (progress < 0.55) stepIndex = 1;
-      else if (progress < 0.85) stepIndex = 2;
-      else stepIndex = 3;
-
+      const stepIndex = determineStepIndex(progress);
       appState.currentStep = stepIndex;
       const data = stepsData[stepIndex];
 
@@ -563,9 +571,10 @@
 
     // Set Timeline Progress
     function setTimelineProgress(p) {
-      appState.progress = Math.min(1.0, Math.max(0.0, p));
+      appState.progress = clampProgress(p);
       const percent = (appState.progress * 100).toFixed(1);
       timelineSlider.value = percent;
+      timelineSlider.setAttribute('aria-valuenow', percent);
       sliderProgressLabel.textContent = `${percent}%`;
       timelinePercent.textContent = `진행률 ${Math.round(percent)}%`;
       updateStepUI(appState.progress);
@@ -608,6 +617,7 @@
     // Play/Pause Toggle
     function togglePlay() {
       appState.isPlaying = !appState.isPlaying;
+      playBtn.setAttribute('aria-pressed', appState.isPlaying ? 'true' : 'false');
       if (appState.isPlaying) {
         if (appState.progress >= 1.0) {
           setTimelineProgress(0);
@@ -682,6 +692,7 @@
     const SEGMENTS = 36;
 
     let scene, camera, renderer, controls;
+    let animationFrameId = null;
     let goreMeshes = [];
     let targetDisks = [];
     let wireframeSphere = null;
@@ -1112,16 +1123,20 @@
       // Resize event
       window.addEventListener('resize', onWindowResize);
 
-      // Animation Loop
+      // Animation Loop with RAF guard to prevent duplicate loops
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
       let lastTime = performance.now();
       function animate(currentTime) {
-        requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
 
         const delta = Math.min((currentTime - lastTime) / 1000, 0.1);
-        lastTime = currentTime;
 
         if (appState.isPlaying) {
-          let nextP = appState.progress + (delta / 6.0) * appState.speed;
+          const pDelta = calculatePlaybackDelta(currentTime, lastTime, appState.speed);
+          let nextP = appState.progress + pDelta;
           if (nextP >= 1.0) {
             nextP = 1.0;
             setTimelineProgress(1.0);
@@ -1130,6 +1145,7 @@
             setTimelineProgress(nextP);
           }
         }
+        lastTime = currentTime;
 
         // Celebration visual pulse on target disks
         if (celebrationPulse > 0) {
@@ -1150,7 +1166,7 @@
           renderer.render(scene, camera);
         }
       }
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
     }
 
     // Wireframe & Color Toggles
