@@ -4,6 +4,10 @@
   "type": "module",
   "description": "구의 겉넓이가 4pi r^2인 원리를 보여주는 인터랙티브 3D 웹앱",
   "scripts": {
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "test:e2e": "node tests/browser-verification.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.0"
   }
 }

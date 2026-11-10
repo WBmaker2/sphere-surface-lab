@@ -86,7 +86,7 @@
           </span>
         </div>
         <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
-          입체도형의 겉넓이 | 구의 표면적 = 같은 반지름 원 4개의 넓이 ($S = 4\pi r^2$)
+          입체도형의 겉넓이 | 구의 표면적 = 같은 반지름 원 4개의 넓이 (<span class="inline-math">S = 4\pi r^2</span>)
         </p>
       </div>
     </div>
@@ -183,7 +183,7 @@
       <div class="flex items-start gap-2">
         <i data-lucide="sparkles" class="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0"></i>
         <div class="text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
-          <span class="font-bold">귤껍질 원리:</span> 귤의 겉껍질을 4등분하여 평평하게 펼치면, 귤 단면과 똑같은 크기의 원 4개를 빈틈없이 채웁니다! 따라서 <span class="font-bold underline">구의 겉넓이는 $4\pi r^2$</span>입니다.
+          <span class="font-bold">귤껍질 원리:</span> 귤의 겉껍질을 4등분하여 평평하게 펼치면, 귤 단면과 똑같은 크기의 원 4개를 빈틈없이 채웁니다! 따라서 <span class="font-bold underline">구의 겉넓이는 <span class="inline-math">4\pi r^2</span></span>입니다.
         </div>
       </div>
     </div>
@@ -328,11 +328,11 @@
           <h4 class="font-bold text-blue-900 dark:text-blue-200 text-sm flex items-center gap-1">
             <i data-lucide="check-circle" class="w-4 h-4"></i> 공식 유도 핵심 아이디어
           </h4>
-          <p>
-            1. 반지름이 $r$인 구의 표면을 경도 90°씩 4개의 균일한 조각(Quadrant Gores)으로 나눕니다.<br>
-            2. 각 조각의 겉넓이는 구 전체 겉넓이의 $\frac{1}{4}$입니다.<br>
-            3. 이 조각을 평면으로 펼치면 반지름이 $r$인 원(넓이 $\pi r^2$) 1개를 완전히 채우게 됩니다.<br>
-            4. 따라서 4조각을 합친 구의 전체 겉넓이는 <strong>$4 \times \pi r^2 = 4\pi r^2$</strong>가 됩니다!
+          <p id="help-modal-concept">
+            1. 반지름이 <span class="inline-math">r</span>인 구의 표면을 경도 90°씩 4개의 균일한 조각(Quadrant Gores)으로 나눕니다.<br>
+            2. 각 조각의 겉넓이는 구 전체 겉넓이의 <span class="inline-math">\frac{1}{4}</span>입니다.<br>
+            3. 이 조각을 평면으로 펼치면 반지름이 <span class="inline-math">r</span>인 원(넓이 <span class="inline-math">\pi r^2</span>) 1개를 완전히 채우게 됩니다.<br>
+            4. 따라서 4조각을 합친 구의 전체 겉넓이는 <strong><span class="inline-math">4 \times \pi r^2 = 4\pi r^2</span></strong>가 됩니다!
           </p>
         </div>
 
@@ -478,6 +478,17 @@
         window.katex.render(`r = ${r.toFixed(1)}\\text{ cm}`, calcRadius, { throwOnError: false });
         window.katex.render(`\\pi r^2 \\approx ${circleArea.toFixed(2)}\\text{ cm}^2`, calcCircle, { throwOnError: false });
         window.katex.render(`S = 4 \\times (\\pi r^2) = 4\\pi r^2 \\approx ${sphereArea.toFixed(2)}\\text{ cm}^2`, calcSphere, { throwOnError: false });
+      }
+    }
+
+    // Render all static inline math elements
+    function renderInlineMathElements() {
+      if (window.katex) {
+        document.querySelectorAll('.inline-math').forEach(el => {
+          try {
+            window.katex.render(el.textContent.trim(), el, { throwOnError: false });
+          } catch (e) {}
+        });
       }
     }
 
@@ -1214,6 +1225,7 @@
     window.resetCameraView = resetCameraView;
 
     // Initial Math Update & Three Scene Init
+    renderInlineMathElements();
     updateMathFormulas(appState.radius);
     updateStepUI(0.0);
 
